@@ -58,8 +58,9 @@ public class CRUD {
         return true;
     }
     
-    public void setBudget(float budget){
+    public void setMonthlyBudget(float budget){
         this.budget.setAmount(budget);
+        write();
     }
 
     public JSONArray getExpenses() {
@@ -70,7 +71,7 @@ public class CRUD {
         int length = expenses.length();
         JSONArray filteredExpenses = new JSONArray();
         if(length == 0)
-            return null;
+            return filteredExpenses;
         
         for (int i = 0; i < length; i++) {
             JSONObject expense = expenses.getJSONObject(i);

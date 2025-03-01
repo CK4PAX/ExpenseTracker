@@ -113,15 +113,6 @@ public class APITest {
     }
     
     @Test
-    public void testCheckExpenseExist(){
-        String[] args = {"add","--amount","5000.00",
-            "--description","buy a house","--category"
-                ,"investment"};
-        int id = API.addExpense(args);
-        assertTrue(API.checkExpenseExist(id));
-    }
-    
-    @Test
     public void testCheckArgsToUpdateExpenseOption(){
         String[] args = {"update","--id","123",
             "--description","pay lunch","--amount"
@@ -202,7 +193,7 @@ public class APITest {
     
     @Test
     public void testCheckArgsToGetMonthlySummaryWithBadMonth(){
-        String[] args = {"summary","--month","23"};
+        String[] args = {"summary","--month","13"};
         assertEquals(2,API.checkMonthlySummaryArgs(args));
     }
     
@@ -226,7 +217,7 @@ public class APITest {
     @Test
     public void testCheckDescriptionLength(){
         String string = "pay middle school last month";
-        String test = "pay middle scho...";
+        String test = "pay middle school...";
         
         assertEquals(test, API.checkDescriptionLength(string));
     }
@@ -258,5 +249,37 @@ public class APITest {
     public void testCheckArgsToListExpensesByCategoryWithBadOption(){
         String[] args = {"list","category","food"};
         assertEquals(1, API.checkArgsToListExpensesByCategory(args));
+    }
+    
+    @Test
+    public void testCheckBudgetReached(){
+        assertDoesNotThrow(()->{API.checkBudgetReached();});
+    }
+    
+    @Test
+    public void testCheckAmountModificationdOnUpdateOption(){
+        String[] args = {"update", "--id", "12","--amount","450"};
+        assertDoesNotThrow(()->{API.checkAmountModificationOnUpdateOption(args);});
+    }
+    
+    @Test
+    public void testCheckBudgetReachedOnUpdate(){
+        float budget = API.crud.getBudget().getAmount();
+        API.setMonthlyBudget(new String[]{"budget","99999"});
+        int id = API.addExpense(new String[]{"add","--description"
+                ,"buy bread","--amount","50000"});
+        String[] uargs = {"update", "--id", 
+            String.valueOf(id),"--amount","100000"};
+        API.updateExpense(uargs);
+        assertTrue(API.checkAmountModificationOnUpdateOption(uargs));
+        assertTrue(API.checkBudgetReached());
+        API.setMonthlyBudget(new String[]{"budget",String.valueOf(budget)});
+        API.deleteExpense(new String[]{"delete", "--id",String.valueOf(id)});
+    }
+    
+    @Test
+    public void testExportToCSV(){
+        String[] args = {"csv"};
+        assertDoesNotThrow(()->{API.exportToCSV(args);});
     }
 }

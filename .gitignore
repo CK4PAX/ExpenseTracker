@@ -1,3 +1,5 @@
 /target/
 /nbproject/
 *.json
+*.csv
+*.json.swp

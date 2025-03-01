@@ -162,7 +162,7 @@ public class CRUDTest {
     @Test
     public void testCheckBudgetExceeded(){
         float budget = crud.getBudget().getAmount();
-        crud.setBudget(500);
+        crud.setMonthlyBudget(500);
         Map m = new HashMap();
         m.put("description", "fix the kitchen");
         m.put("amount", 600f);
@@ -170,7 +170,7 @@ public class CRUDTest {
         int id = crud.addExpense(m);
         boolean result = crud.checkBudgetReached();
         
-        crud.setBudget(budget);
+        crud.setMonthlyBudget(budget);
         crud.deleteExpense(id);
         assertTrue(result);
     }
