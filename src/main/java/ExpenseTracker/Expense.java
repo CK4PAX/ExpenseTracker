@@ -1,13 +1,13 @@
 package ExpenseTracker;
 
 import java.text.DateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Expense {
     private int id;
     private String description;
-    private String date = DateFormat
-            .getDateInstance(DateFormat.SHORT).format(new Date());
+    private String date = LocalDate.now().toString();
     private float amount;
     private String category;
     
@@ -55,7 +55,6 @@ public class Expense {
     }
 
     public void setAmount(float amount) {
-        
         this.amount = amount;
     }
 

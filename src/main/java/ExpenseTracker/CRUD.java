@@ -1,5 +1,6 @@
 package ExpenseTracker;
 
+import java.time.LocalDate;
 import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,8 +27,111 @@ public class CRUD {
         }
     }
 
+    public Budget getBudget() {
+        return budget;
+    }
+    
+    public boolean checkBudgetReached(){
+        int length = expenses.length();
+        
+        if(budget.getAmount() == 0)
+            return false;
+        if(expenses.length() == 0)
+            return false;
+        
+        LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        float suma = 0;
+        
+        for (int i = 0; i < length; i++) {
+            JSONObject expense = expenses.getJSONObject(i);
+            LocalDate date = LocalDate.parse(expense.getString("date"));
+            
+            if(year == date.getYear() && month == date.getMonthValue())
+                suma += expense.getFloat("amount");
+        }
+        
+        if(suma < budget.getAmount())
+            return false;
+        
+        return true;
+    }
+    
+    public void setBudget(float budget){
+        this.budget.setAmount(budget);
+    }
+
     public JSONArray getExpenses() {
         return expenses;
+    }
+    
+    public JSONArray getExpensesByCategory(String category){
+        int length = expenses.length();
+        JSONArray filteredExpenses = new JSONArray();
+        if(length == 0)
+            return null;
+        
+        for (int i = 0; i < length; i++) {
+            JSONObject expense = expenses.getJSONObject(i);
+            if(expense.getString("category").equalsIgnoreCase(category))
+                filteredExpenses.put(expense);
+        }
+        return filteredExpenses;
+    }
+    
+    public float getMonthlySummary(int month){
+        if(expenses.length() == 0)
+            return -1;
+        
+        float summary = 0;
+        int year = LocalDate.now().getYear();
+        
+        for (int i = 0; i < expenses.length(); i++){ 
+            
+            JSONObject expense = expenses.getJSONObject(i);
+            LocalDate date = LocalDate.parse(expense.getString("date"));
+            
+            if(date.getYear() == year && date.getMonthValue() == month)
+                summary += expenses.getJSONObject(i).getFloat("amount");
+        }
+        
+        return summary;
+    }
+    
+    public float getSummary(){
+        if(expenses.length() == 0)
+            return -1;
+        
+        float summary = 0;
+        
+        for (int i = 0; i < expenses.length(); i++) 
+            summary += expenses.getJSONObject(i).getFloat("amount");
+        
+        return summary;
+    }
+    
+    public JSONObject getExpense(int id){
+        for (int i = 0; i < expenses.length(); i++) {
+            JSONObject expense = expenses.getJSONObject(i);
+            if(expense.getInt("id") == id)
+                return expense;
+        }
+        return null;
+    }
+    
+    public int updateExpense(Map uexpenseMap){
+        int id  = (int)uexpenseMap.get("id");
+        
+        for (int i = 0; i < expenses.length(); i++) {
+            JSONObject expense = expenses.getJSONObject(i);
+            if(expense.getInt("id") == id){
+                uexpenseMap.forEach((k,v)->{expense.put((String)k,v);});
+                write();
+                return id;
+            }
+        }
+        return -1;
     }
     
     public boolean checkExpenseExist(int id){
@@ -55,7 +159,7 @@ public class CRUD {
     public  Expense createExpense(Map expenseMap){
         
         String description = (String)expenseMap.get("description");
-        float  amount = Float.parseFloat((String)expenseMap.get("amount"));
+        float  amount = (float)expenseMap.get("amount");
         String category = (String)expenseMap.get("category");
         Expense expense = null;
         int id = 0;

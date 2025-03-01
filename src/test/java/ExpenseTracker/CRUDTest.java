@@ -2,6 +2,7 @@ package ExpenseTracker;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,11 +18,22 @@ public class CRUDTest {
     }
     
     @Test
+    public void testGetMonthlySummary(){
+        int month = 2;
+        assertDoesNotThrow(()->{crud.getMonthlySummary(month);});
+    }
+    
+    @Test
+    public void testGetSummary(){
+        assertDoesNotThrow(()->{crud.getSummary();});
+    }
+    
+    @Test
     public void testCreateExpenseWithoutCategory() {
         Map test = new HashMap();
 
         String description = "buy a car";
-        String amount = "123.34";
+        float amount = 123.34f;
 
         test.put("description", description);
         test.put("amount",amount);
@@ -29,7 +41,7 @@ public class CRUDTest {
         Expense expense = crud.createExpense(test);
 
         assertEquals(description, expense.getDescription());
-        assertEquals(Float.parseFloat(amount), expense.getAmount());
+        assertEquals(amount, expense.getAmount());
     }
     
     @Test
@@ -37,8 +49,8 @@ public class CRUDTest {
         Map test = new HashMap();
 
         String description = "buy a car";
-        String amount = "123.34";
-        String category = "inversion";
+        float amount = 123.34f;
+        String category = "investment";
 
         test.put("description", description);
         test.put("amount",amount);
@@ -47,7 +59,7 @@ public class CRUDTest {
         Expense expense = crud.createExpense(test);
 
         assertEquals(description, expense.getDescription());
-        assertEquals(Float.parseFloat(amount), expense.getAmount());
+        assertEquals(amount, expense.getAmount());
         assertEquals(category, expense.getCategory());
     }
     
@@ -56,7 +68,7 @@ public class CRUDTest {
         Map test = new HashMap();
 
         String description = "buy a car";
-        String amount = "123.34";
+        float amount = 123.34f;
         String category = "inversion";
 
         test.put("description", description);
@@ -72,7 +84,7 @@ public class CRUDTest {
     public void testCheckExpenseExist(){
         Map m = new HashMap();
         m.put("description", "pay taxes");
-        m.put("amount", "123.45");
+        m.put("amount", 123.45f);
         int id = crud.addExpense(m);
         assertTrue(crud.checkExpenseExist(id));
         crud.deleteExpense(id);
@@ -88,7 +100,7 @@ public class CRUDTest {
     public void testDeleteExpense(){
         Map m = new HashMap();
         m.put("description", "pay taxes");
-        m.put("amount", "123.45");
+        m.put("amount", 123.45f);
         int id = crud.addExpense(m);
         crud.deleteExpense(id);
         assertFalse(crud.checkExpenseExist(id));
@@ -98,5 +110,68 @@ public class CRUDTest {
     public void testDeleteExpenseUnknowedId(){
         int id = -99;
         assertEquals(-1, crud.deleteExpense(id));
+    }
+    
+    @Test
+    public void testGetExpense(){
+        Map m = new HashMap();
+        m.put("description", "laundry payment");
+        m.put("amount", 76.45f);
+        
+        int id = crud.addExpense(m);
+        JSONObject expense = crud.getExpense(id);
+        assertEquals("laundry payment",expense.get("description"));
+        assertEquals(76.45f, expense.get("amount"));
+        crud.deleteExpense(id);
+    }
+    
+    @Test
+    public void testUpdateExpense(){
+        Map m = new HashMap();
+        m.put("description", "pay taxes");
+        m.put("amount", 123.45f);
+        
+        int id = crud.addExpense(m);
+        
+        Map modified = new HashMap();
+        
+        modified.put("id", id);
+        modified.put("description", "pay dinner");
+        modified.put("amount", 50.00f);
+        
+        crud.updateExpense(modified);
+        
+        JSONObject expense = crud.getExpense(id);
+        
+        assertEquals("pay dinner", expense.getString("description"));
+        assertEquals(50.00f, expense.getFloat("amount"));
+        crud.deleteExpense(id);
+    }
+    
+    
+    @Test
+    public void testGetExpensesByCategory(){
+        assertDoesNotThrow(()->{crud.getExpensesByCategory("food");});
+    }
+    
+    @Test
+    public void testCheckBudget(){
+        assertDoesNotThrow(()->{crud.checkBudgetReached();});
+    }
+    
+    @Test
+    public void testCheckBudgetExceeded(){
+        float budget = crud.getBudget().getAmount();
+        crud.setBudget(500);
+        Map m = new HashMap();
+        m.put("description", "fix the kitchen");
+        m.put("amount", 600f);
+        
+        int id = crud.addExpense(m);
+        boolean result = crud.checkBudgetReached();
+        
+        crud.setBudget(budget);
+        crud.deleteExpense(id);
+        assertTrue(result);
     }
 }
